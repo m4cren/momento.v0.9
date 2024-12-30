@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    {% block head %}
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     {%block icon%} <link rel="stylesheet" href="{{url_for('static', filename='icons/iconNamin.png')}}"> {%endblock%}
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js" integrity="sha512-8BHxHDLsOHx+flIrQ0DrZcea7MkHqRU5GbTHmbdzMRnAaoCIkZ97PqZcXJkKZckMMhqfoeaJE+DNUVuyoQsO3Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+     <title>{% block title%}Homepage{% endblock %}</title>
+     {% block css %}<link rel="stylesheet" href="{{url_for('static', filename='stylingShit/homepage.css')}}"> {% endblock %}
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+     {% endblock %}
+     
+</head>
+<body>
+     <div class="nav-bar">
+          <div class="home-search">
+
+               {%block header%}
+                    <li>
+     
+                       
+                         <a href="/userprofile" class="parent"><img src="{{url_for('views.get_profile_picture', user_id = current_user.id)}}" alt="" class="profile_pic"></a>
+          
+                    </li>
+               {%endblock%}
+
+               <div class="search-container">
+                    <form action="#">
+                         <input class="search-input" type="text" placeholder="Search someone in momento" name="query-name" autocomplete="off">
+                         
+                         <div class="search_history">
+                              <ul class="history-search">
+                                   <h3>History</h3>
+
+                                   {% for history in searchHistory %}
+                                   <a href="/view-other-profile/{{history.searched_id}}">
+                                        <img src="{{url_for('views.get_profile_picture', user_id = history.searched_id)}}" alt="">
+                                        <p>{{history.seached_name}}</p>
+                                        <button id="delete-history" onclick="deleteHistory('{{history.searched_id}}')"><i class="fa-solid fa-trash"></i></button>
+                                   </a>
+                                   {%endfor%}
+                                  
+                               
+                              </ul>
+                              <ul class="search-results">
+                                   <h3>Results</h3>
+                                   <div class="cont">
+
+                                   </div>
+                                   
+                              </ul>
+                         </div>
+                    </form>
+               </div>
+          </div>
+          
+          <ul class="menu-btn">
+               
+               <li class="notify-parent">
+                    <button class="menu-btn-text" onclick="viewNotifications('{{current_user.id}}')"><i class="fa-solid fa-list"></i></button>
+                    {% if notificationCount != 0 %}
+                         <p class="notify notify-count">{{notificationCount}}</p>
+                    {%else%}
+                         <p class="notify hidden"></p>
+                    {%endif%}
+               </li>
+               <li class="message-notify-parent">
+                    <button class="menu-btn-text" onclick="openMessageAll('{{current_user.id}}')" id="messageBtnAll"><i class="fa-regular fa-message"></i></button>
+                    <span class="message-notify"></span>
+               </li>
+
+               <div class="notification-container">
+                    <div class="head">
+                         <h2>Notifications</h2>
+                         <div>
+                              <button id="unread-notification" >Recent</button>
+                              <button id="history-notification" class="buttonToggled">All</button>
+                         </div>
+                    </div>
+                   
+                    <hr>
+
+                    <ul class="notification-context">
+                         {%for notif in notifications%}
+                         <li><img src="{{url_for('views.get_profile_picture', user_id = notif.owner_id)}}" alt="">{{notif.context_type}}</li>
+                         {%endfor%}
+                    </ul>
+
+                    <ul class="notification-context-unread">
+                        
+                    </ul>
+                    
+               </div>
+
+               <div class="message-all-popup">
+                    <div class="message-all-container">
+                         <button class="exit-message-all" ><i class="fa-solid fa-circle-xmark"></i></button>
+                         <div class="contacts">
+                              <h2>Contacts</h2>
+                              <ul>
+                                   {% for comrade in comrades %}
+                                   
+                                   {% set active_ids = []%}
+                                   {% if activeUsers%}
+                                        {% set active_ids = activeUsers | map(attribute='active_id') | list %}
+                                   {% endif %}
+                                   <li class="contact-listt" onclick="viewConversation('{{comrade.comrade_id}}')" id="contactList-{{comrade.comrade_id}}">
+                                        {%if comrade.comrade_id in active_ids %}
+                                             <img src="{{url_for('views.get_profile_picture', user_id = comrade.comrade_id)}}" class="online" alt="">
+                                        {%else%}
+                                             <img src="{{url_for('views.get_profile_picture', user_id = comrade.comrade_id)}}" class="offline" alt="">
+                                        {%endif%}
+                                        
+                                        <div>
+                                             <h4>{{comrade.comrade_name}}</h4>
+                                             <p class="last-message-{{comrade.comrade_id}} last-message"></p>
+                                        </div>
+                                   </li>
+
+                                   {%endfor%}
+                                   
+                              </ul>
+                         </div>
+                         <div class="message-other-container">
+                              <div class="user-information-head">
+                                   <div class="profile-name-conversation">
+                                       
+                                   </div>
+                                   <div class="call-video-elips-conversation">
+                                        <button class="call"><i class="fa-solid fa-phone"></i></button>
+                                        <button class="video"><i class="fa-solid fa-video"></i></button>
+                                        <button class="elips"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                   </div>
+                              </div>
+                              <div class="message-conversation-container" >
+                                      
+
+
+
+                              </div>
+                              <div class="message-conversation-action">
+                                   <button><i class="fa-regular fa-face-smile-wink"></i></button>
+                                   <textarea name="" id="messageText" class="text-area"></textarea>
+                                   <input type="file" class="upload-file">
+                                   <button onclick="uploadFile()"><i id="toggle-file-text" class="fa-solid fa-upload"></i></button>
+                                   <div class="message-conversation-action-send">
+
+                                   </div>
+                              </div>
+                         </div>
+                    </div>
+               </div>
+               
+               
+          </ul>
+         
+     </div>
+     {% block content%}
+
+     {% endblock %}
+</body>
+
+</html>

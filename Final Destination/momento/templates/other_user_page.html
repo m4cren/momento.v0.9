@@ -1,0 +1,156 @@
+{% extends "profile_page.html"%}
+
+
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js" integrity="sha512-8BHxHDLsOHx+flIrQ0DrZcea7MkHqRU5GbTHmbdzMRnAaoCIkZ97PqZcXJkKZckMMhqfoeaJE+DNUVuyoQsO3Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<link rel="stylesheet" href="{{url_for('static', filename = 'stylingShit/other_user_page.css')}}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% block title %}
+     {{user.firstName + " " + user.lastName}}
+{% endblock %}
+{% endblock %}
+
+
+
+{% block content %}
+{% block header%}
+
+<li>
+     <a class="menu-btn-text" href="/homepage"><i class="fa-solid fa-house"></i></a>
+</li>
+
+
+{% endblock %}
+<div class="left-side">
+     <div class="cover-profile-container">
+          <div class="cover-container">
+               <img src="{{url_for('views.get_cover_picture', user_id = user.id)}}" alt="">
+          </div>
+          <div class="profile-container">
+               <img src="{{url_for('views.get_profile_picture', user_id = user.id)}}" alt="">
+
+               <div>
+                    <div class="head">
+                         <h2>{{user.firstName + " " + user.lastName}}</h2>
+                    {% if do_i_follow_this%}
+                  
+                    <button id="follow-{{user.id}}" class="unfollow-btn" onclick="followToggle('{{user.id}}', '{{current_user.id}}')">Unfollow</button>
+             
+                    
+                    {%else%}
+                   
+                    <button id="follow-{{user.id}}" class="follow-btn" onclick="followToggle('{{user.id}}', '{{current_user.id}}')">Follow</button>
+                
+                    
+                    {%endif%}
+
+                    </div>
+                    
+                    <ul class="count-container-tablet">
+                         <div>
+                              <h2>{{postCount}}</h2>
+                              <h3>Posts</h3>
+                         </div>
+                         <div>
+                              <h2>{{followersCount}}</h2>
+                              <h3>Followers</h3>
+                         </div>
+                         <div>
+                              <h2>{{followingCount}}</h2>
+                              <h3>Following</h3>
+                         </div>
+                    </ul>
+               </div>
+               
+          </div>
+          
+     </div>
+     <div class="info-container">
+          <ul>
+               <li class="bio">"{{user.bio}}"</li>
+               <li>{{user.address}}</li>
+               <li>{{user.birthday}}</li>
+          </ul>
+     </div>
+</div>
+
+<div class="right-side">
+     <div class="timeline">
+          {% for post in posts%}
+          <div class="post-item">
+
+               <div class="post-header">
+                    <div class="profile-name">
+                         <img src="{{url_for('views.get_profile_picture', user_id = post.user_id)}}" alt="">
+                         <h3>{{user.firstName + " " + user.lastName}}</h3>
+                    </div>
+                    <h4>{{post.datePost}}</h4>
+               </div>
+               <div class="post-content">
+                    <p class="caption">{{post.caption}}</p>
+                    {%if 'image' in post.mimetype%}
+                         <img src="{{url_for('views.get_post_picture', user_id = post.id)}}" alt="User Picture">
+                    {%elif 'video' in post.mimetype%}
+                         <video controls src="{{url_for('views.get_post_picture', user_id = post.id)}}" type="{{post.mimetype }}"></video>
+                    {%endif%}
+               </div>
+               <div class="post-action">
+                    <button id="like-btn-{{post.id}}" class="like-btn {% if post.id in liked_posts %}liked{% endif %}" onclick="toggleLike('{{post.id}}','{{current_user.id}}')">
+                         {% if post.id in liked_posts %}
+                              <i class="fa-solid fa-heart"></i>
+                         {%else%}
+                              <i class="fa-regular fa-heart"></i>
+                         {% endif %}
+                    </button>
+                    <p id="like-count-{{post.id}}" class="like-count" onmouseenter="viewLikes('{{post.id}}')">{{post.like_count}}</p>
+                    <div class="user-who-likes userWhoLikes" id="user-who-likes-{{post.id}}"></div>
+
+                    <div class="form">
+                         <input type="text" placeholder="Comment" name ="comment" required="" id="comment-text-{{post.id}}">
+                         <button type="submit" onclick="sendComment('{{post.id}}')"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+
+                    <button type="button" onclick="viewComment('{{post.id}}')" class="comment-btn" id="comment-section-btn-{{post.id}}"><i class="fa-regular fa-comment"></i></button>
+                    <span id="comment-section-counter-{{post.id}}">{{post.comment_count}}</span>
+                    <div class="comment-box-popup">
+                         <div class="comment-box">
+                              <div class="post-info">
+                                   <p>{{post.nameWhoPost}}'s post</p>
+                              </div>
+     
+                              <button class="close-comment-box"><i class="fa-solid fa-circle-xmark"></i></button>
+                              
+                              <ul class="comment-list-container">
+                                   <!-- <li class="comment-list">
+                                   
+                                        <div>
+                                             <img src="{{url_for('static', filename = 'defaultImages/default.jpg')}}" alt="">
+                                             <p class="name">Marc Rainier Reyes:</p>
+                                        </div>
+                                        <p class="comment-content">jccjwnw</p>
+                                        <p class="date">01/24/0000</p>
+                                        
+                                   </li> -->
+                              </ul>
+                              
+                             
+                              
+                         </div>
+                    </div>
+               </div>
+               
+          </div>
+          {%endfor%}
+     </div>
+</div>
+<script>
+     const CURRENT_USER_ID = "{{ current_user.id }}";
+</script>
+<script src="{{url_for('static', filename = 'javascript/otheruserpage.js')}}">
+    
+</script>
+
+
+
+{% endblock %}

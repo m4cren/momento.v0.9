@@ -1,0 +1,364 @@
+{% extends "base.html"%}
+
+{%block icon%}<link rel="icon" type="image/x-icon" href="{{url_for('static', filename = 'icons/iconNamin.png')}}">{%endblock%}
+{% block css %}<link rel="stylesheet" href="{{url_for('static', filename='stylingShit/homepage.css')}}"> {% endblock %}
+{% block title%} Homepage {% endblock %}
+
+
+{% block content%}
+
+<div class="content">
+     <div class="menu-bar">
+          <div class="leaderboards">
+               <h1>Leaderboards</h1>
+               <ul>
+
+                    {% for user in ALLUSERS%}
+                    <li class="leaderboard-list">
+                         <img class="leaderboard-profile" src="{{url_for('views.get_profile_picture', user_id = user.id)}}" alt="">
+                         <p class="leaderboard-name">{{user.firstName}} {{user.lastName}}</p>
+                         <h3 class="rank">{{user.highscore}}</h3>
+                    </li>
+                    {%endfor%}
+               </ul>
+          </div>
+          <div class="game-container">
+               <h1>Play Now</h1>
+               <a href="/open-game"><i class="fa-solid fa-gamepad"></i></a>
+          </div>
+          <div class="game-container-tablet">
+               <a href=""><i class="fa-solid fa-gamepad"></i></a>
+          </div>
+     </div>
+     <div class="timeline">
+
+          {% for post in posts%}
+
+          <div class="post-item">
+               <div class="post-header">
+                    <div class="profile-name">
+                         <img src="{{url_for('views.get_profile_picture', user_id = post.user_id)}}" alt="">
+                         <h3>{{post.nameWhoPost}}</h3>
+                    </div>
+                    <h5>{{post.datePost}}</h5>
+               </div>
+               <div class="post-content">
+                    <p class="caption">{{post.caption}}</p>
+                    {%if 'image' in post.mimetype%}
+                         <img src="{{url_for('views.get_post_picture', user_id = post.id)}}" alt="User Picture">
+                    {%elif 'video' in post.mimetype%}
+                         <video controls src="{{url_for('views.get_post_picture', user_id = post.id)}}" type="{{post.mimetype }}"></video>
+                    {%endif%}
+               </div>
+               <div class="post-action">
+
+                    <button id="like-btn-{{post.id}}" class="like-btn {% if post.id in liked_posts %}liked{% endif %}" onclick="toggleLike('{{post.id}}','{{current_user.id}}')">
+                         {% if post.id in liked_posts %}
+                              <i class="fa-solid fa-heart"></i>
+                         {%else%}
+                              <i class="fa-regular fa-heart"></i>
+                         {% endif %}
+                    </button>
+                    <p id="like-count-{{ post.id }}" class="like-count" onmouseenter="viewLikes('{{post.id}}')">{{post.like_count}}</p>
+
+                    <div class="user-who-likes" id="user-who-likes-{{post.id}}">
+                         
+                    </div>
+
+                    <div class="form">
+                         <input type="text" placeholder="Comment" name ="comment" required="" id="comment-text-{{post.id}}">
+                         <button type="submit" onclick="sendComment('{{post.id}}')"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                         
+                   
+
+                    <button type="button" onclick="viewComment('{{post.id}}')" class="comment-btn" id="comment-section-btn-{{post.id}}"><i class="fa-regular fa-comment"></i></button>
+                    <span id="comment-section-counter-{{post.id}}">{{post.comment_count}}</span>
+     
+                    
+
+                    <div class="comment-box-popup">
+                         <div class="comment-box">
+                              <div class="post-info">
+                                   <p class="name-who-post"></p>
+                              </div>
+     
+                              <button class="close-comment-box"><i class="fa-solid fa-circle-xmark"></i></button>
+                              
+                              <ul class="comment-list-container">
+                                   <!-- <li class="comment-list">
+                                   
+                                        <div>
+                                             <img src="{{url_for('static', filename = 'defaultImages/default.jpg')}}" alt="">
+                                             <p class="name">Marc Rainier Reyes:</p>
+                                        </div>
+                                        <p class="comment-content">jccjwnw</p>
+                                        <p class="date">01/24/0000</p>
+                                        
+                                   </li> -->
+                              </ul>
+                              
+                             
+                              
+                         </div>
+                    </div>
+                    
+                    
+               </div>
+               
+          </div>
+         
+          {%endfor%}
+
+     </div>
+     <button class="settings">
+          <i class="fa-solid fa-gear"></i>
+      </button>
+      <button class="post">
+           <i class="fa-solid fa-pencil"></i>
+       </button>
+      <div class="settings-popup">
+           <button class="darkmode" id="updateBtn">Update information</button>
+           <button id="deleteAccountBtn">Delete account</button>
+           <button id="logoutBtn" class="logout">Logout</button>
+      </div>
+     <!-- for tablet devices(portrait) -->
+     <div class="suggestion-leaderboard-container">
+          <div class="suggestion-container">
+               <h2>Comrades</h2>
+               <ul>
+                    
+                    {% for comrade in comrades %}
+
+                   
+                         
+                         <a href="/view-other-profile/{{comrade.comrade_id}}">
+                              {% set active_ids = []%}
+                              {% if activeUsers%}
+                                   {% set active_ids = activeUsers | map(attribute='active_id') | list %}
+                              {% endif %}
+                              <li>
+                                   <div>
+
+                                        {%if comrade.comrade_id in active_ids %}
+                                             <span class="user-id-{{comrade.comrade_id}} is-online"></span>
+                                        {%else%}
+                                             <span class="user-id-{{comrade.comrade_id}} is-offline"></span>
+                                        {%endif%}
+                                        
+                                        <img src="{{url_for('views.get_profile_picture', user_id = comrade.comrade_id)}}" alt="">
+                                        <p>{{comrade.comrade_name}}</p>
+                                   </div>
+                              
+                                   
+                              </li>
+                         </a>
+     
+                       
+                    {% endfor %}
+               </ul>
+          </div>
+          <div class="leaderboards">
+               <h1>Leaderboards</h1>
+               <ul>
+                    <li class="leaderboard-list">
+                
+                         <img class="leaderboard-profile" src="{{url_for('static', filename = 'defaultImages/default.jpg')}}" alt="">
+                         <p class="leaderboard-name">Marc Rainier Reyes</p>
+                         <h3 class="rank">1</h3>
+                    </li>
+               </ul>
+          </div>
+
+     </div>
+
+     <div class="edit-popup">
+          <div class="edit-container">
+               <div class="edit-head">
+                    <h2>
+                         Create Post
+                    </h2>
+                    <button class="edit-exit">
+                         <i class="fa-solid fa-circle-xmark"></i>
+                    </button>
+               </div>
+               <hr>
+               <div class="profile-info">
+                    <img src="{{url_for('views.get_profile_picture', user_id = current_user.id)}}" alt="">
+                    <div>
+                         <h4>{{name}}</h4>
+                         <button><i class="fa-solid fa-user-group"></i>Friends<i class="fa-solid fa-caret-down"></i></button>
+                    </div>
+               </div>
+               <form action="/upload-post" method="post" enctype="multipart/form-data">
+                    <input type="text" placeholder="Caption" name="caption">
+                    <input type="file" name="post-picture">      
+                    <input type="submit" value="Post">
+               </form>
+          </div>
+     </div>
+     <div class="update-information-popup">
+          <div class="update-information-container">
+               <button class="exit-update-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+               <h1>Update Information</h1>
+
+               <form method="post" action="/update-name" class="update-name">
+                    <label for="update-firstname">First Name</label>
+                    <input type="text" name="updateFirstName" id="update-firstname">
+                    <label for="update-lastname">Last Name</label>
+                    <input type="text" name="updateLastName" id="update-lastname">
+                    <input type="Submit" value="Update">
+               </form>
+            
+               <form method="post" action="/update-bio" class="update-bio">
+                    <label for="update-bio">Bio</label>
+                    <input type="text" id="update-bio" name="updateBio">
+                    <input type="Submit" value="Update">
+               </form>
+
+               <form method="post" action="/update-address" class="update-address">
+                    <label for="update-address">Address</label>
+                    <input type="text" id="update-address" name="updateAddress">
+                    <input type="Submit" value="Update">
+               </form>
+        
+               <form method="post" action="/update-password" class="update-password">
+               
+                    
+                    <div class="password-container">
+                         <label for="old-password">Old Password</label>
+                         <input class="input-field" type="password" name="oldPassword"  required="" id="old-password">
+                         <i class="fa-solid fa-eye" id="showOldPassword"></i>
+                    </div>
+                    <div class="password-container">
+                         <label for="update-password">New Password</label>
+                         <input class="input-field" type="password" name="newPassword" required="" id="update-password">
+                         <i class="fa-solid fa-eye" id="showNewPassword"></i>
+                    </div>
+                    <input type="Submit" value="Update">
+               </form>
+
+          </div>
+          
+     </div>
+{% with messages = get_flashed_messages(with_categories = true)%}
+     {% if messages %}
+          {% for category, msg in messages %}
+               {% if category == 'error2' %}
+               <div class="prompt-container">
+                    <div class="error-msg">
+                         <h2>{{msg}}</h2>
+                         <button class="exit-prompt">x</button>
+                    </div> 
+               </div>
+               {% endif %}
+          {% endfor %}
+     {% endif %}
+{% endwith %}
+     <div class="delete-account-popup">
+          <div class="delete-account-container">
+               <button class="exit-delete-btn"><i class="fa-regular fa-circle-xmark"></i></button>
+               <h1>Delete mo na account mo?</h1>
+
+               <form method="post" action="/delete-account" class="delete-account">
+                    <input placeholder="Enter your password" type="password" name="password1" id="password1">
+                    <input placeholder="Confirm password" type="password" name="password2" id="password2">
+                    <p class="warning-text"></p>
+                    <input type="Submit" value="Byee">
+               </form>
+
+          </div>
+          
+     </div>
+
+     <div class="panel-bar">
+          <div class="suggestion-container">
+               <h2>Comrades</h2>
+               <ul>
+                    {% for comrade in comrades %}
+
+                    
+                         
+                             
+                                   {% set active_ids = []%}
+                                   {% if activeUsers%}
+                                        {% set active_ids = activeUsers | map(attribute='active_id') | list %}
+                                   {% endif %}
+                                   <li>
+                                        <div>
+
+                                             {%if comrade.comrade_id in active_ids %}
+                                                  <span class="user-id-{{comrade.comrade_id}} is-online"></span>
+                                             {%else%}
+                                                  <span class="user-id-{{comrade.comrade_id}} is-offline"></span>
+                                             {%endif%}
+                                             <a href="/view-other-profile/{{comrade.comrade_id}}">
+                                                  <img src="{{url_for('views.get_profile_picture', user_id = comrade.comrade_id)}}" alt="">
+                                                  <p>{{comrade.comrade_name}}</p>
+                                             </a>
+                                             <!-- <button id="message-btn-{{comrade.comrade_id}}" onclick="message('{{comrade.comrade_id}}')"><i class="fa-solid fa-message"></i></button> -->
+                                        </div>
+                                      
+                                        
+                                   </li>
+                              
+
+                              <div class="message-popup">
+                                   <div class="message-container">
+                                        
+                                        <div class="user-info">
+                                             <button class="exit-message" onclick="exitMessage()"><i class="fa-solid fa-arrow-left"></i></button>
+
+                                             <div class="profile-name">
+                                                  
+                                                 
+                                             </div>
+                                             
+
+                                             <div class="actionss">
+                                                  <button class="call"><i class="fa-solid fa-phone"></i></button>
+                                                  <button class="video"><i class="fa-solid fa-video"></i></button>
+                                                  <button class="elips"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                                             </div>
+                                        </div>
+                                        <div class="message-content">
+
+                                                       <!-- <div class="self-message">
+                                                            <p class="message-text"></p>
+                                                       </div>
+                                       
+                                                       <div class="other-message">
+                                                            <img class="profile-other" src="{{url_for('views.get_profile_picture', user_id = comrade.comrade_id)}}" alt="">
+                                                            <p class="message-text"></p>
+                                                       </div>
+                                             -->
+                                          
+                                             
+                                        </div>
+                                        <div class="message-action">
+                                             <button><i class="fa-regular fa-face-smile-wink"></i></button>
+                                             <textarea name="" id="messageText" class="text-area"></textarea>
+                                             <input type="file" class="upload-file">
+                                             <button onclick="uploadFile()"><i id="toggle-file-text" class="fa-solid fa-upload"></i></button>
+                                             <div class="message-action-send-message">
+
+                                             </div>
+                                             <!-- <button onclick="sendMessage('{{comrade.comrade_id}}')"><i class="fa-solid fa-paper-plane"></i></button> -->
+                                        </div>
+                                   </div>
+                                  
+                              </div>
+                              
+               
+                    {% endfor %}
+               </ul>
+          </div>
+          
+     </div>
+    
+</div>
+<script>
+     const CURRENT_USER_ID = "{{ current_user.id }}";
+</script>
+<script src="{{url_for('static', filename = 'javascript/homepage.js')}}"></script>
+{% endblock %}

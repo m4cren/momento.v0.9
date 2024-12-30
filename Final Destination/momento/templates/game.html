@@ -1,0 +1,35 @@
+{%extends 'homepage.html'%}
+
+{%block head%}
+
+
+<script defer src="{{url_for('static', filename='javascript/game.js')}}"></script>
+{% block css %}<link rel="stylesheet" href="{{url_for('static', filename='stylingShit/game.css')}}"> {% endblock %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js" integrity="sha512-8BHxHDLsOHx+flIrQ0DrZcea7MkHqRU5GbTHmbdzMRnAaoCIkZ97PqZcXJkKZckMMhqfoeaJE+DNUVuyoQsO3Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+{%endblock%}
+
+{%block header%}
+<li>
+     <a class="menu-btn-text" href="/homepage"><i class="fa-solid fa-house"></i></a>
+</li>
+{%endblock%}
+
+
+{%block content%}
+
+<div class="container">
+     <div id="score"></div>
+     <canvas id="game" width="375" height="375"></canvas>
+     <div id="introduction">Hold down the mouse to stretch out a stick</div>
+     <div id="perfect">DOUBLE SCORE</div>
+     <button id="restart">RESTART</button>
+   </div>
+
+   <script>
+     const CURRENT_USER_ID = "{{ current_user.id }}";
+</script>
+<script defer src="{{url_for('static', filename = 'javascript/game_socket.js')}}"></script>
+{%endblock%}
